@@ -11,13 +11,127 @@ customtkinter.set_appearance_mode("dark")
 APP_NAME = "Application comptable"
 SOLDE = 0.00
 SOLDE_PREVISIONNEL = 0.00
-global db
-global app
-global mainPage
-global insertOperation
-global historiqueOperations
+
+# Variables de connexion à la bdd
+# username = "jean"
+# password = "1q4JPZeym7KkwsO5"
+# db_ip = "app-comptable.akieago.mongodb.net"
+# db_port = ""
 
 # ==================================== FONCTIONS CONCERNANT L'APPLICATION =================================================
+
+def showConfig(errors = {}, info_connexion = []):
+    global config
+    config = customtkinter.CTk() # On crée l'application
+    config.title(APP_NAME) # On définie un titre
+
+    # TITRE
+    titre = customtkinter.CTkLabel(config, text="Connexion à la base de donnée", font=customtkinter.CTkFont(family="Helvetica", size=40, weight="bold"))
+    titre.grid(row=0, column=0, columnspan=2, pady=(50,50), padx=(50,50))
+
+    if len(info_connexion) < 1:
+        # SHOW ERRORS
+        if "erreur" in errors:
+            erreur = customtkinter.CTkLabel(config, text=errors["erreur"], font=customtkinter.CTkFont(family="Helvetica", size=18), text_color="red")
+            erreur.grid(row=1, column=0, columnspan=2, pady=(0,30))
+
+        # LABELS
+        identifiant_titre = customtkinter.CTkLabel(config, text="Identifiant:", font=customtkinter.CTkFont(family="Helvetica", size=27, weight="bold"))
+        identifiant_titre.grid(row=2, column=0, pady=(0,20), padx=(50, 20), sticky="w")
+
+        mdp_titre = customtkinter.CTkLabel(config, text="Mot de passe:", font=customtkinter.CTkFont(family="Helvetica", size=27, weight="bold"))
+        mdp_titre.grid(row=3, column=0, pady=(0,20), padx=(50, 20), sticky="w")
+
+        ip_titre = customtkinter.CTkLabel(config, text="IP:", font=customtkinter.CTkFont(family="Helvetica", size=27, weight="bold"))
+        ip_titre.grid(row=4, column=0, pady=(0,20), padx=(50, 20), sticky="w")
+
+        port_titre = customtkinter.CTkLabel(config, text="Port:", font=customtkinter.CTkFont(family="Helvetica", size=27, weight="bold"))
+        port_titre.grid(row=5, column=0, pady=(0,30), padx=(50, 20), sticky="w")
+
+        # INPUTS
+        identifiant_input = customtkinter.CTkEntry(config, width=350)
+        identifiant_input.grid(row=2, column=1, pady=(0,20), sticky="w")
+
+        mdp_input = customtkinter.CTkEntry(config, width=350)
+        mdp_input.grid(row=3, column=1, pady=(0,20), sticky="w")
+
+        ip_input = customtkinter.CTkEntry(config, width=350)
+        ip_input.grid(row=4, column=1, pady=(0,20), sticky="w")
+
+        port_input = customtkinter.CTkEntry(config, width=350)
+        port_input.grid(row=5, column=1, pady=(0,30), sticky="w")
+
+        # BOUTON
+        connexion = customtkinter.CTkButton(config, text="Connexion", font=customtkinter.CTkFont(family="Helvetica", size=18, weight="bold"), fg_color="green", command=lambda:connect_db(config, identifiant_input.get(), mdp_input.get(), ip_input.get(), port_input.get()))
+        connexion.grid(row=6, column=0, columnspan=2, pady=(0,50), ipady=10, ipadx=20)
+
+        config.grid_columnconfigure(1, weight=1)
+
+    else:
+
+        # TITRE
+        sous_titre = customtkinter.CTkLabel(config, text="Voulez-vous utiliser les paramètres de connexion sauvergardée ?", font=customtkinter.CTkFont(family="Helvetica", size=20, weight="bold"), text_color="red")
+        sous_titre.grid(row=1, column=0, columnspan=2, pady=(0,50), padx=(20,20))
+
+        # LABELS
+        identifiant_titre = customtkinter.CTkLabel(config, text="Identifiant:", font=customtkinter.CTkFont(family="Helvetica", size=27, weight="bold"))
+        identifiant_titre.grid(row=2, column=0, pady=(0,20), padx=(50, 20), sticky="w")
+
+        mdp_titre = customtkinter.CTkLabel(config, text="Mot de passe:", font=customtkinter.CTkFont(family="Helvetica", size=27, weight="bold"))
+        mdp_titre.grid(row=3, column=0, pady=(0,20), padx=(50, 20), sticky="w")
+
+        ip_titre = customtkinter.CTkLabel(config, text="IP:", font=customtkinter.CTkFont(family="Helvetica", size=27, weight="bold"))
+        ip_titre.grid(row=4, column=0, pady=(0,20), padx=(50, 20), sticky="w")
+
+        port_titre = customtkinter.CTkLabel(config, text="Port:", font=customtkinter.CTkFont(family="Helvetica", size=27, weight="bold"))
+        port_titre.grid(row=5, column=0, pady=(0,30), padx=(50, 20), sticky="w")
+
+        # INPUTS
+        identifiant_input = customtkinter.CTkEntry(config, width=350)
+        identifiant_input.insert(0, info_connexion[0])
+        identifiant_input.configure(state="disabled")
+        identifiant_input.grid(row=2, column=1, pady=(0,20), sticky="w")
+
+        mdp_input = customtkinter.CTkEntry(config, width=350)
+        mdp_input.insert(0, info_connexion[1])
+        mdp_input.configure(state="disabled")
+        mdp_input.grid(row=3, column=1, pady=(0,20), sticky="w")
+
+        ip_input = customtkinter.CTkEntry(config, width=350)
+        ip_input.insert(0, info_connexion[2])
+        ip_input.configure(state="disabled")
+        ip_input.grid(row=4, column=1, pady=(0,20), sticky="w")
+
+        port_input = customtkinter.CTkEntry(config, width=350)
+        port_input.insert(0, info_connexion[3])
+        port_input.configure(state="disabled")
+        port_input.grid(row=5, column=1, pady=(0,30), sticky="w")
+
+        # BOUTON
+        non = customtkinter.CTkButton(config, text="Non", font=customtkinter.CTkFont(family="Helvetica", size=18, weight="bold"), fg_color="red", command=destroyConfig)
+        non.grid(row=6, column=0, pady=(0,50), ipady=10, ipadx=20, sticky="e")
+
+        oui = customtkinter.CTkButton(config, text="Oui", font=customtkinter.CTkFont(family="Helvetica", size=18, weight="bold"), fg_color="green", command=lambda:connect_db(config, info_connexion[0], info_connexion[1], info_connexion[2], info_connexion[3]))
+        oui.grid(row=6, column=1, pady=(0,50), padx=(50, 0), ipady=10, ipadx=20, sticky="w")
+
+    config.configure(fg_color="#1a1a1a") # On définie le forground (background)
+    config.resizable(width=False, height=False) # On interdit le redimensionnement de la page
+    config.mainloop() # On vient faire tourner la boucle de l'application
+
+def destroyConfig():
+    config.destroy()
+    showConfig()
+
+def startApp():
+    global app
+    app = customtkinter.CTk() # On crée l'application
+    app.title(APP_NAME) # On définie un titre
+
+    raise_frame("mainPage") # On vient créer et afficher la page principale
+
+    app.configure(fg_color="#1a1a1a") # On définie le forground (background)
+    app.resizable(width=False, height=False) # On interdit le redimensionnement de la page
+    app.mainloop() # On vient faire tourner la boucle de l'application
 
 def raise_frame(page, currentFrame = None):
     """
@@ -309,18 +423,31 @@ def grab_date():
 
 # ============================================ FONCTIONS CONCERNANT LA BDD ==================================================
 
-def connect_db(username, password, ip, port, db_name):
+def connect_db(config, username, password, ip, port):
     """
     Cette fonction permet de se connecter à la bdd.
     Elle prend en paramètre l'adresse ip et le port ou est stockée la bdd ainsi que le nom de la bdd.
     Elle renvoie l'object contenant la bdd.
     """
 
-    connection_string = f"mongodb+srv://{username}:{password}@{ip}/{db_name}"
-    client = MongoClient(connection_string)
-    db = client.get_database("app_comptable")
+    config.destroy()
 
-    return db
+    if port == "":
+        connection_string = f"mongodb+srv://{username}:{password}@{ip}"
+    else:
+        connection_string = f"mongodb+srv://{username}:{password}@{ip}:{port}"
+
+    try:
+        client = MongoClient(connection_string)
+        global db
+        db = client.get_database("app_comptable")
+
+        with open("config_db", "w") as config:
+            config.write(username + "\n" + password + "\n" + ip + "\n" + port + "\n")
+
+        startApp()
+    except:
+        showConfig({"erreur": "La connexion à la base de donnée a échoué..."})
 
 def insert_db(db, collectionName, typeOfInsertion, operation):
     """
@@ -352,9 +479,6 @@ def update_db(collectionName, typeOfModification, data, new_type):
         date_formate_fin = datetime.strptime(date_formate_fin_str, "%Y-%m-%d %H:%M:%S.%f")
 
         filter = {"$and": [{"horodatage": {"$gte": date_formate_debut, "$lte": date_formate_fin}}, {"montant": float(data[2])}, {"motif": data[3]}]}
-        print(date_formate_debut_str)
-        print(date_formate_fin_str)
-        print(filter)
         new_values = {"$set": {"type": new_type}}
         collection.update_one(filter, new_values)
 
@@ -488,21 +612,15 @@ def verify_motif(motif):
 
 # ==================================== FIN DES FONCTIONS DE VERIFICATIONS ==========================================
 
-# Variables de connexion à la bdd
-username = "jean"
-password = "1q4JPZeym7KkwsO5"
-db_ip = "app-comptable.akieago.mongodb.net"
-db_port = ""
-db_name = "app_comptable"
+try:
+    with open("config_db", "r") as config_info:
+        info = []
 
-db = connect_db(username, password, db_ip, db_port, db_name) # On se connecte à la bdd
+        for line in config_info.readlines():
+            info.append(line.rstrip("\n"))
 
-app = customtkinter.CTk() # On crée l'application
-app.title(APP_NAME) # On définie un titre
+        info_formate = [info[0], info[1], info[2], info[3]]
+except:
+    info_formate = []
 
-raise_frame("mainPage") # On vient créer et afficher la page principale
-
-app.configure(fg_color="#1a1a1a") # On définie le forground (background)
-app.resizable(width=False, height=False) # On interdit le redimensionnement de la page
-app.mainloop() # On vient faire tourner la boucle de l'application
-
+showConfig({}, info_formate)
