@@ -1,0 +1,52 @@
+{
+	"QMainWindow":[
+		{
+			"tittle":"Application comptable",
+			"icon":"logo.png",
+			"frameless": true,
+			"transluscentBg": true,
+			"sizeGrip": "sizeGrip",
+			"navigation":[
+				{
+					"minimize":"minimizeBtn",
+					"close": "closeBtn",
+					"restore":[
+						{	
+							"buttonName": "fullScreenBtn",
+							"normalIcon": "icons/square.svg",
+							"maximizedIcon": "icons/minimize.svg"
+						}
+					],
+					"moveWindow": "headerContainer",
+					"tittleBar": "headerContainer"
+				}
+			]
+		}
+	],
+	"QCustomSlideMenu": [{
+		"name": "leftMenuContainer",
+		"defaultSize": [{
+			"width": 50,
+			"height": "parent"
+		}],
+		"collapsedSize": [{
+			"width": 50,
+			"height": "parent"
+		}],
+		"expandedSize": [{
+			"width": 188,
+			"height": "parent"
+		}],
+		"toggleButton": [{
+			"buttonName": "menuBtn",
+			"icons": [{
+				"whenMenuIsCollapsed": "icons/align-justify.svg",
+				"whenMenuIsExpanded": "icons/chevron-left.svg"
+			}]
+		}],
+		"menuTransitionAnimation": [{
+			"animationDuration": 500,
+			"animationEasingCurve": "Linear"
+		}]
+	}]
+}
